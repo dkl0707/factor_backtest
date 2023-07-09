@@ -10,6 +10,9 @@ Date: 2022-10-04 09:57:32
 '''
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+plt.rcParams['font.sans-serif'] = ['SimHei']  
+plt.rcParams['axes.unicode_minus'] = False
 
 
 # 因子处理部分
@@ -70,7 +73,7 @@ def stackdf(df, var_name, date_name='trade_date', code_name='stock_code'):
     '''
     df = df.copy()
     df = df.stack().reset_index()
-    df.columns = ['trade_date', 'stock_code', var_name]
+    df.columns = [date_name, code_name, var_name]
     return df
 
 
@@ -198,3 +201,87 @@ def get_next_date(date, trade_date_lst):
     for i in range(len(trade_date_lst) - 1):
         if (trade_date_lst[i] < date) and (date <= trade_date_lst[i + 1]):
             return trade_date_lst[i + 1]
+
+
+# 画图部分
+def plot_bar_line(x1, y1, x2, y2, label1, label2, xlabel, ylabel1, ylabel2, fig_title):
+    '''
+    Description
+    ----------
+    绘制双坐标的柱状图和线形图
+
+    Parameters
+    ----------
+    x1: array_like, 柱状图横坐标
+    y1: array_like, 柱状图纵坐标
+    x2: array_like, 线形图横坐标
+    y2: array_like, 线形图纵坐标
+    label1: str. 柱状图的图例
+    label2: str. 线形图的图例
+    xlabel: str. 横坐标标签
+    ylabel1: str. 柱状图纵坐标标签
+    ylabel2: str. 柱状图纵坐标标签
+    fig_title: str. 图片标题
+
+    Return
+    ----------
+    figure.
+    '''
+    fig, ax1 = plt.subplots(figsize=(10, 5)) 
+    ax2 = ax1.twinx() 
+    ax1.bar(x1, y1, color='#FF0000', label=label1, width=8)
+    ax1.set_xlabel(xlabel)
+    ax1.set_ylabel(ylabel1) 
+    ax2.plot(x2, y2, color='#FFCC00', linewidth=3, label=label2)
+    ax2.set_ylabel(ylabel2) 
+    # 获取主坐标轴和辅助坐标轴的图例和标签
+    lines_1, labels_1 = ax1.get_legend_handles_labels()
+    lines_2, labels_2 = ax2.get_legend_handles_labels()
+    # 合并图例和标签
+    lines = lines_1 + lines_2
+    labels = labels_1 + labels_2
+    # 在右上角创建一个新的子图对象，并将图例添加到其中
+    ax_legend = fig.add_subplot(111)
+    ax_legend.legend(lines, labels, loc=2)
+    # 设置标题
+    plt.title(fig_title)
+    # 隐藏新的子图对象的坐标轴
+    ax_legend.axis('off')
+    plt.close()
+    return fig
+
+
+def plot_multi_line(x_lst, y_lst, label_lst, xlabel, ylabel, fig_title):
+    '''
+    Description
+    ----------
+    绘制多根折线图
+
+    Parameters
+    ----------
+    x_lst: array_like, 折线图横坐标列表
+    y_lst: array_like, 折线图纵坐标列表
+    label_lst: array_like, 折线图标签列表
+    xlabel: str. 折线图横坐标标签
+    ylabel: str. 折线图纵坐标标签
+    fig_title: str. 图片标题
+
+    Return
+    ----------
+    figure.
+    '''
+    n = len(x_lst)
+    color_range=np.linspace(0.05, 0.95, n)
+    fig = plt.figure(figsize=(10, 5))
+    for i in range(n):
+        x = x_lst[i]
+        y = y_lst[i]
+        label = label_lst[i]
+        color = plt.cm.jet(color_range[i])
+        plt.plot(x, y, color=color, label=label)
+    plt.legend(loc=2)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(fig_title)
+    plt.close()
+    return fig
